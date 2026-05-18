@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Upload } from 'lucide-react'
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
+import Layout from '../components/Layout'
 import ModalDependente from '../components/ModalDependente'
 import { INVERNADAS } from '../data/constants'
 import { useToast } from '../contexts/ToastContext'
@@ -44,20 +43,18 @@ export default function NovoSocio() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-
-      <main className="flex-1 bg-[#eef3f8]">
+    <Layout>
+      <main className="flex-1 bg-[#f0f2f5]">
         <div className="max-w-5xl mx-auto px-6 py-7">
 
           <div className="mb-6">
-            <h1 className="text-[#1737b7] text-3xl font-bold mb-1.5">Novo Sócio</h1>
+            <h1 className="text-[#1a3560] text-3xl font-bold mb-1.5">Novo Sócio</h1>
             <p className="text-gray-500">Preencha os dados para cadastrar um novo sócio</p>
           </div>
 
           {/* Dados pessoais */}
           <section className="bg-white rounded-2xl p-6 mb-6 shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
-            <h2 className="text-[#1737b7] text-xl font-bold mb-1">Dados Pessoais</h2>
+            <h2 className="text-[#1a3560] text-xl font-bold mb-1">Dados Pessoais</h2>
             <p className="text-xs text-gray-400 mb-6">* Campo obrigatório</p>
 
             {/* Foto */}
@@ -151,7 +148,7 @@ export default function NovoSocio() {
 
           {/* Informações sobre situações */}
           <section className="bg-white rounded-2xl p-6 mb-6 shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
-            <h2 className="text-[#1737b7] text-xl font-bold mb-6">Informações sobre Situações</h2>
+            <h2 className="text-[#1a3560] text-xl font-bold mb-6">Informações sobre Situações</h2>
             <div className="bg-[#f8fbff] border border-[#bfdcff] rounded-2xl p-5">
               <p className="text-blue-600 text-sm mb-2">
                 <strong>Ativo:</strong> Sócio com participação regular e em dia
@@ -165,7 +162,7 @@ export default function NovoSocio() {
           {/* Dependentes */}
           <section className="bg-white rounded-2xl p-6 mb-6 shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
             <div className="flex justify-between items-center flex-wrap gap-3 mb-2">
-              <h2 className="text-[#1737b7] text-xl font-bold">Dependentes</h2>
+              <h2 className="text-[#1a3560] text-xl font-bold">Dependentes</h2>
               <button
                 onClick={() => setModalAberto(true)}
                 className="border border-blue-300 text-blue-600 bg-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-50 transition-colors cursor-pointer"
@@ -175,7 +172,7 @@ export default function NovoSocio() {
             </div>
             {dependentes.map((dep, i) => (
               <div key={i} className="bg-gray-50 rounded-xl p-4 mt-3.5 border border-gray-200">
-                <h4 className="font-bold text-[#1737b7] mb-2">Dependente {i + 1}</h4>
+                <h4 className="font-bold text-[#1a3560] mb-2">Dependente {i + 1}</h4>
                 <p className="text-sm mb-1"><strong>Matrícula:</strong> {dep.matricula}</p>
                 <p className="text-sm mb-1"><strong>Nome:</strong> {dep.nome}</p>
                 <p className="text-sm"><strong>CPF:</strong> {dep.cpf}</p>
@@ -222,14 +219,12 @@ export default function NovoSocio() {
         </div>
       </main>
 
-      <Footer />
-
       {modalAberto && (
         <ModalDependente
           onFechar={() => setModalAberto(false)}
           onSalvar={handleSalvarDependente}
         />
       )}
-    </div>
+    </Layout>
   )
 }

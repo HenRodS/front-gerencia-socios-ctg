@@ -79,7 +79,7 @@ export default function ModalPagamento({ nomeSocio, onFechar, onSalvar }) {
       <div className="bg-white w-full max-w-[500px] rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.18)] overflow-hidden">
 
         {/* Cabeçalho */}
-        <div className="bg-[#1737b7] px-6 py-5 flex justify-between items-start">
+        <div className="bg-[#1a3560] px-6 py-5 flex justify-between items-start">
           <div>
             <h2 className="text-white text-lg font-bold">Registrar Pagamento</h2>
             <p className="text-blue-200 text-sm mt-0.5">{nomeSocio}</p>
@@ -168,7 +168,7 @@ export default function ModalPagamento({ nomeSocio, onFechar, onSalvar }) {
             </button>
             <button
               onClick={confirmar}
-              className="bg-[#1737b7] text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-blue-800 transition-colors shadow-[0_4px_12px_rgba(23,55,183,0.35)] cursor-pointer"
+              className="bg-[#1a3560] text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-blue-800 transition-colors shadow-[0_4px_12px_rgba(26,53,96,0.35)] cursor-pointer"
             >
               Confirmar Pagamento
             </button>

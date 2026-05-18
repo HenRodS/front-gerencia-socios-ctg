@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Users, CheckCircle, AlertCircle, UserPlus } from 'lucide-react'
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
+import Layout from '../components/Layout'
 import Badge from '../components/Badge'
 import StatCard from '../components/StatCard'
 import EmptyState from '../components/EmptyState'
@@ -24,14 +23,12 @@ export default function Painel() {
   const novosAno = socios.filter(s => s.data_entrada.endsWith('2026')).length
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-
-      <main className="flex-1 bg-[#eef3f8]">
+    <Layout>
+      <main className="flex-1 bg-[#f0f2f5]">
         <div className="max-w-7xl mx-auto px-6 py-7">
 
           <div className="mb-7">
-            <h1 className="text-[#1737b7] text-3xl font-bold mb-1">Painel</h1>
+            <h1 className="text-[#1a3560] text-3xl font-bold mb-1">Painel</h1>
             <p className="text-gray-500">Visão geral do sistema de sócios</p>
           </div>
 
@@ -43,7 +40,7 @@ export default function Painel() {
           </div>
 
           <section className="bg-white rounded-2xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.08)] mb-6">
-            <h3 className="text-[#1737b7] text-lg font-bold mb-5">Últimos Cadastros</h3>
+            <h3 className="text-[#1a3560] text-lg font-bold mb-5">Últimos Cadastros</h3>
             {ultimosCadastros.map(socio => (
               <Link
                 key={socio.id}
@@ -96,8 +93,6 @@ export default function Painel() {
 
         </div>
       </main>
-
-      <Footer />
-    </div>
+    </Layout>
   )
 }

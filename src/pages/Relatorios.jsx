@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
+import Layout from '../components/Layout'
 
 export default function Relatorios() {
   const [tipoRelatorio, setTipoRelatorio] = useState('')
@@ -23,20 +22,18 @@ export default function Relatorios() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-
-      <main className="flex-1 bg-[#eef3f8]">
+    <Layout>
+      <main className="flex-1 bg-[#f0f2f5]">
         <div className="max-w-7xl mx-auto px-6 py-7">
 
           <div className="mb-6">
-            <h1 className="text-[#1737b7] text-3xl font-bold mb-1.5">Relatórios</h1>
+            <h1 className="text-[#1a3560] text-3xl font-bold mb-1.5">Relatórios</h1>
             <p className="text-gray-500">Gere relatórios personalizados e exporte em diversos formatos</p>
           </div>
 
           {/* Configurar Relatório */}
           <section className="bg-white rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.08)] mb-6 overflow-hidden">
-            <div className="bg-[#edf4ff] px-6 py-4 font-bold text-[#1737b7] border-b border-blue-100">
+            <div className="bg-[#eef1f8] px-6 py-4 font-bold text-[#1a3560] border-b border-blue-100">
               Configurar Relatório
             </div>
             <div className="p-6">
@@ -95,7 +92,7 @@ export default function Relatorios() {
 
               {resultado && (
                 <div className="mt-6 p-5 rounded-xl bg-[#f8fbff] border border-[#bfdcff]">
-                  <h3 className="text-[#1737b7] font-bold text-lg mb-2">Relatório Gerado com Sucesso</h3>
+                  <h3 className="text-[#1a3560] font-bold text-lg mb-2">Relatório Gerado com Sucesso</h3>
                   <p className="text-gray-700 mb-1.5">Tipo: {resultado.tipoRelatorio}</p>
                   <p className="text-gray-700 mb-1.5">Situação: {resultado.situacao}</p>
                   <p className="text-gray-700 mb-4">Pagamento: {resultado.pagamento}</p>
@@ -122,8 +119,6 @@ export default function Relatorios() {
 
         </div>
       </main>
-
-      <Footer />
-    </div>
+    </Layout>
   )
 }

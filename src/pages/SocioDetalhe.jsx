@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
+import Layout from '../components/Layout'
 import Badge from '../components/Badge'
 import ModalPagamento from '../components/ModalPagamento'
 import { INVERNADAS } from '../data/constants'
@@ -25,16 +24,14 @@ export default function SocioDetalhe() {
 
   if (!form) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
+      <Layout>
         <main className="flex-1 flex items-center justify-center p-6">
           <div className="text-center">
             <p className="text-gray-500 text-lg mb-4">Sócio não encontrado.</p>
             <Link to="/socios" className="text-blue-600 font-bold hover:underline">← Voltar para Sócios</Link>
           </div>
         </main>
-        <Footer />
-      </div>
+      </Layout>
     )
   }
 
@@ -68,10 +65,8 @@ export default function SocioDetalhe() {
   const totalPago = `R$ ${pagos * 80},00`
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-
-      <main className="flex-1 bg-[#eef3f8]">
+    <Layout>
+      <main className="flex-1 bg-[#f0f2f5]">
         <div className="max-w-5xl mx-auto px-6 py-7 w-full">
 
         {/* Voltar */}
@@ -84,11 +79,11 @@ export default function SocioDetalhe() {
 
         {/* Cabeçalho do sócio */}
         <div className="bg-white rounded-2xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.08)] mb-6 flex items-center gap-6 flex-wrap">
-          <div className="w-[80px] h-[80px] rounded-full bg-[#1737b7] flex items-center justify-center text-white text-2xl font-bold shrink-0">
+          <div className="w-[80px] h-[80px] rounded-full bg-[#1a3560] flex items-center justify-center text-white text-2xl font-bold shrink-0">
             {iniciais(form.nome)}
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-[#1737b7] text-3xl font-bold mb-1 truncate">{form.nome}</h1>
+            <h1 className="text-[#1a3560] text-3xl font-bold mb-1 truncate">{form.nome}</h1>
             <p className="text-gray-500 text-sm mb-3">CPF: {form.cpf} · Sócio desde {form.data_entrada}</p>
             <div className="flex gap-2 flex-wrap">
               <Badge color="green">{form.status}</Badge>
@@ -102,7 +97,7 @@ export default function SocioDetalhe() {
 
         {/* Dados pessoais */}
         <section className="bg-white rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.08)] mb-6 overflow-hidden">
-          <div className="bg-[#edf4ff] px-6 py-4 font-bold text-[#1737b7] border-b border-blue-100">
+          <div className="bg-[#eef1f8] px-6 py-4 font-bold text-[#1a3560] border-b border-blue-100">
             Dados Pessoais
           </div>
           <div className="p-6">
@@ -194,11 +189,11 @@ export default function SocioDetalhe() {
 
         {/* Histórico de Pagamentos */}
         <section className="bg-white rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.08)] mb-6 overflow-hidden">
-          <div className="bg-[#edf4ff] px-6 py-4 border-b border-blue-100 flex justify-between items-center gap-3 flex-wrap">
-            <span className="font-bold text-[#1737b7]">Histórico de Pagamentos</span>
+          <div className="bg-[#eef1f8] px-6 py-4 border-b border-blue-100 flex justify-between items-center gap-3 flex-wrap">
+            <span className="font-bold text-[#1a3560]">Histórico de Pagamentos</span>
             <button
               onClick={() => setModalPagamento(true)}
-              className="bg-[#1737b7] text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-blue-800 transition-colors cursor-pointer shadow-[0_2px_8px_rgba(23,55,183,0.3)]"
+              className="bg-[#1a3560] text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-blue-800 transition-colors cursor-pointer shadow-[0_2px_8px_rgba(23,55,183,0.3)]"
             >
               + Registrar Pagamento
             </button>
@@ -209,7 +204,7 @@ export default function SocioDetalhe() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               <div className="bg-gray-50 rounded-xl p-4 text-center">
                 <p className="text-gray-500 text-sm mb-1">Total Pago</p>
-                <p className="text-[#1737b7] text-2xl font-bold">{totalPago}</p>
+                <p className="text-[#1a3560] text-2xl font-bold">{totalPago}</p>
               </div>
               <div className="bg-green-50 rounded-xl p-4 text-center">
                 <p className="text-gray-500 text-sm mb-1">Pagamentos em Dia</p>
@@ -256,8 +251,6 @@ export default function SocioDetalhe() {
         </div>
       </main>
 
-      <Footer />
-
       {modalPagamento && (
         <ModalPagamento
           nomeSocio={form.nome}
@@ -265,6 +258,6 @@ export default function SocioDetalhe() {
           onSalvar={handleSalvarPagamento}
         />
       )}
-    </div>
+    </Layout>
   )
 }

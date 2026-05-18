@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ChevronRight, Users } from 'lucide-react'
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
+import Layout from '../components/Layout'
 import Badge from '../components/Badge'
 import EmptyState from '../components/EmptyState'
 import { INVERNADAS } from '../data/constants'
@@ -34,15 +33,13 @@ export default function Socios() {
   })
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-
-      <main className="flex-1 bg-[#eef3f8]">
+    <Layout>
+      <main className="flex-1 bg-[#f0f2f5]">
         <div className="max-w-7xl mx-auto px-6 py-7">
 
           <div className="flex justify-between items-center mb-6 flex-wrap gap-4 max-md:flex-col max-md:items-start">
             <div>
-              <h1 className="text-[#1737b7] text-3xl font-bold">Sócios</h1>
+              <h1 className="text-[#1a3560] text-3xl font-bold">Sócios</h1>
               <p className="text-gray-500">Gerenciar cadastro de sócios do CTG</p>
             </div>
             <div className="flex gap-2.5 flex-wrap">
@@ -56,7 +53,7 @@ export default function Socios() {
           </div>
 
           <section className="bg-white rounded-2xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.08)] mb-6">
-            <h2 className="text-[#1737b7] text-xl font-bold mb-5">Filtros</h2>
+            <h2 className="text-[#1a3560] text-xl font-bold mb-5">Filtros</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
               <input
                 type="text"
@@ -137,8 +134,6 @@ export default function Socios() {
 
         </div>
       </main>
-
-      <Footer />
-    </div>
+    </Layout>
   )
 }

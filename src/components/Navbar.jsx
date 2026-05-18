@@ -3,13 +3,13 @@ import { NavLink } from 'react-router-dom'
 export default function Navbar() {
   const linkClass = ({ isActive }) =>
     `px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all duration-300 font-medium ${
-      isActive ? 'bg-white text-[#1737b7] font-semibold' : 'text-white hover:bg-white/15'
+      isActive ? 'bg-white text-[#1a3560] font-semibold' : 'text-white hover:bg-white/15'
     }`
 
   return (
-    <header className="w-full bg-[#1737b7] text-white px-7 py-3.5 flex items-center justify-between shadow-[0_2px_10px_rgba(0,0,0,0.2)] max-md:flex-col max-md:gap-5">
+    <header className="w-full bg-[#1a3560] text-white px-7 py-3.5 flex items-center justify-between shadow-[0_2px_10px_rgba(0,0,0,0.2)] max-md:flex-col max-md:gap-5">
       <div className="flex items-center gap-3.5">
-        <div className="w-[52px] h-[52px] rounded-full bg-white flex items-center justify-center font-bold text-[#1737b7] text-sm shrink-0">
+        <div className="w-[52px] h-[52px] rounded-full bg-white flex items-center justify-center font-bold text-[#1a3560] text-sm shrink-0">
           CTG
         </div>
         <div>
