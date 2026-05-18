@@ -1,45 +1,9 @@
-:root {
-  font-family: 'Manrope', 'Segoe UI', sans-serif;
-  line-height: 1.5;
-  font-weight: 500;
-  color: #101828;
-  background: #f5f7fb;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+@import "tailwindcss";
 
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  margin: 0;
-  min-width: 320px;
-  background: #f5f7fb;
-}
-
-button,
-input,
-textarea,
-select {
-  font: inherit;
-}
-
-button {
-  appearance: none;
-}
-
-img,
-svg {
-  display: block;
-}
-
-#root {
-  min-height: 100vh;
+@layer base {
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #eef3f8;
+    color: #1f2937;
+  }
 }
