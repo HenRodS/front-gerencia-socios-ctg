@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { LayoutDashboard, Users, FileText, CreditCard, Menu, X } from 'lucide-react'
-import logo from '../../modelos/css/image_ctg_logo.png'
+import logo from '../../modelos/css/Logo.png'
 
 const links = [
   { to: '/',           label: 'Painel',     icon: LayoutDashboard, end: true },
