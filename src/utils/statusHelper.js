@@ -31,20 +31,23 @@ export function calcularStatusSocio(socio, mensalidadesData) {
     m => m.socio_id === socio.id && !m.dependente_id
   )
 
-  // 1. Verificar se há alguma mensalidade de MESES ANTERIORES que não esteja paga,
-  // mas SOMENTE dentro da janela de lookback de 4 meses E após a admissão do sócio
-  const temAtrasoAnterior = socioMensalidades.some(m => {
-    // Competência da mensalidade é um mês anterior ao atual?
-    const isPastPeriod = m.ano < currentYear || (m.ano === currentYear && m.mes < currentMonth)
-    
-    // Está dentro dos 4 meses retroativos?
-    const dentroDoLookback = m.ano > limiteAno || (m.ano === limiteAno && m.mes >= limiteMes)
-
-    // O sócio já estava admitido?
-    const jaEstavaCadastrado = m.ano > entradaAno || (m.ano === entradaAno && m.mes >= entradaMes)
-
-    return isPastPeriod && dentroDoLookback && jaEstavaCadastrado && m.status === 'Atrasado'
-  })
+  // 1. Verificar se em algum dos 4 meses anteriores o sócio NÃO pagou
+  let temAtrasoAnterior = false
+  for (let i = 1; i <= 4; i++) {
+    let m = currentMonth - i
+    let y = currentYear
+    if (m <= 0) {
+      m += 12
+      y -= 1
+    }
+    // Pular meses anteriores à admissão do sócio
+    if (y < entradaAno || (y === entradaAno && m < entradaMes)) continue
+    const pagamento = socioMensalidades.find(mt => mt.ano === y && mt.mes === m)
+    if (!pagamento || pagamento.status !== 'Pago') {
+      temAtrasoAnterior = true
+      break
+    }
+  }
 
   if (temAtrasoAnterior) {
     return 'Atrasado'
