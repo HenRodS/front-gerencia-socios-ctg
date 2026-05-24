@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import { CheckCircle, Clock, CreditCard, Search, ChevronLeft, ChevronRight, Users } from 'lucide-react'
 import Layout from '../components/Layout'
 import Badge from '../components/Badge'
@@ -99,11 +100,20 @@ export default function Pagamentos() {
     .filter(s => s.statusMes === 'Pago')
     .reduce((acc, s) => acc + parseMoeda(s.valorPagamento), 0)
 
-  const filtrados = sociosComStatus.filter(s => {
-    const matchBusca = (s.nome || '').toLowerCase().includes(busca.toLowerCase())
-    const matchStatus = filtroStatus === 'Todos' || s.statusMes === filtroStatus
-    return matchBusca && matchStatus
-  })
+  const STATUS_ORDEM = { 'Atrasado': 0, 'Pendente': 1, 'Pago': 2 }
+
+  const filtrados = sociosComStatus
+    .filter(s => {
+      const matchBusca = (s.nome || '').toLowerCase().includes(busca.toLowerCase())
+      const matchStatus = filtroStatus === 'Todos' || s.statusMes === filtroStatus
+      return matchBusca && matchStatus
+    })
+    .sort((a, b) => {
+      const ordemA = STATUS_ORDEM[a.statusMes] ?? 1
+      const ordemB = STATUS_ORDEM[b.statusMes] ?? 1
+      if (ordemA !== ordemB) return ordemA - ordemB
+      return (a.nome || '').localeCompare(b.nome || '', 'pt-BR')
+    })
 
   async function handleSalvarPagamento(payload) {
     const { mesStr, valorStr, dataIso, formaPagamento } = payload
@@ -322,14 +332,19 @@ export default function Pagamentos() {
                     i < filtrados.length - 1 ? 'border-b border-gray-100' : ''
                   }`}
                 >
-                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm shrink-0">
-                    {iniciais(s.nome)}
-                  </div>
+                  <Link
+                    to={`/socios/${s.id}`}
+                    className="flex items-center gap-4 min-w-0 flex-1 group"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm shrink-0 group-hover:bg-[#1a3560] group-hover:text-white transition-colors">
+                      {iniciais(s.nome)}
+                    </div>
 
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm truncate">{s.nome}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{s.invernada}</p>
-                  </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm truncate group-hover:text-[#1a3560] transition-colors">{s.nome}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{s.invernada}</p>
+                    </div>
+                  </Link>
 
                   <div className="flex items-center gap-3 shrink-0">
                     {s.statusMes === 'Pago' ? (
