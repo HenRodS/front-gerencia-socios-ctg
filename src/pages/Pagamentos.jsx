@@ -1,52 +1,42 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import { CheckCircle, Clock, CreditCard, Search, ChevronLeft, ChevronRight, Users } from 'lucide-react'
 import Layout from '../components/Layout'
 import Badge from '../components/Badge'
 import EmptyState from '../components/EmptyState'
 import ModalPagamento from '../components/ModalPagamento'
-import { getSocios } from '../services/sociosService'
+import {
+  getSocios,
+  getMensalidades,
+  createMensalidade,
+  updateMensalidade,
+  getPagamentos,
+  createPagamento
+} from '../services/sociosService'
 import { useToast } from '../contexts/ToastContext'
-
-const MESES_NOMES = [
-  'Janeiro','Fevereiro','Março','Abril','Maio','Junho',
-  'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro',
-]
-
-function gerarMeses(quantidade = 13) {
-  const hoje = new Date()
-  const lista = []
-  for (let i = 0; i < quantidade; i++) {
-    const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1)
-    lista.push(`${MESES_NOMES[d.getMonth()]}/${d.getFullYear()}`)
-  }
-  return lista
-}
+import { MESES_NOMES, gerarMeses, iniciais, parseMoeda } from '../utils/formattingUtils'
 
 const MESES = gerarMeses()
 
-function iniciais(nome) {
-  const partes = nome.trim().split(' ')
-  return ((partes[0]?.[0] ?? '') + (partes[partes.length - 1]?.[0] ?? '')).toUpperCase()
-}
-
-function parseMoeda(str) {
-  const n = parseFloat((str ?? 'R$ 80,00').replace(/[^\d,]/g, '').replace(',', '.'))
-  return isNaN(n) ? 80 : n
-}
 
 export default function Pagamentos() {
   const toast = useToast()
   const [socios, setSocios] = useState([])
+  const [mensalidades, setMensalidades] = useState([])
+  const [pagamentos, setPagamentos] = useState([])
   const [loading, setLoading] = useState(true)
   const [mesIdx, setMesIdx] = useState(0)
   const [busca, setBusca] = useState('')
   const [filtroStatus, setFiltroStatus] = useState('Todos')
   const [modalSocio, setModalSocio] = useState(null)
 
-  useEffect(() => {
-    getSocios()
-      .then(data => {
-        setSocios(data)
+  const carregarDados = useCallback(() => {
+    setLoading(true)
+    Promise.all([getSocios(), getMensalidades(), getPagamentos()])
+      .then(([sociosData, mensalidadesData, pagamentosData]) => {
+        setSocios(sociosData)
+        setMensalidades(mensalidadesData)
+        setPagamentos(pagamentosData)
         setLoading(false)
       })
       .catch(err => {
@@ -56,41 +46,135 @@ export default function Pagamentos() {
       })
   }, [toast])
 
+  useEffect(() => {
+    carregarDados()
+  }, [carregarDados])
+
   const mesSelecionado = MESES[mesIdx]
 
-  const sociosComStatus = useMemo(() =>
-    socios.map(s => {
-      const pag = (s.pagamentos || []).find(p => p.mes === mesSelecionado)
+  const sociosComStatus = useMemo(() => {
+    const [mesNome, anoStr] = (mesSelecionado || '').split('/')
+    const mesNum = MESES_NOMES.indexOf(mesNome) + 1
+    const anoNum = parseInt(anoStr, 10)
+
+    return socios.map(s => {
+      const m = mensalidades.find(
+        mens => mens.socio_id === s.id &&
+                mens.mes === mesNum &&
+                mens.ano === anoNum &&
+                !mens.dependente_id
+      )
+      
+      let statusMes = 'Pendente'
+      let dataPagamento = null
+      let valorPagamento = null
+      let mensalidadeId = null
+
+      if (m) {
+        statusMes = m.status
+        mensalidadeId = m.id
+        const p = pagamentos.find(pag => pag.mensalidade_id === m.id)
+        if (p) {
+          dataPagamento = p.data_pagamento
+          valorPagamento = p.valor_pago
+        } else {
+          valorPagamento = m.valor
+        }
+      }
+
       return {
         ...s,
-        statusMes: pag ? pag.status : 'Pendente',
-        dataPagamento: pag?.data ?? null,
-        valorPagamento: pag?.valor ?? null,
+        statusMes,
+        dataPagamento,
+        valorPagamento,
+        mensalidadeId,
+        mesNum,
+        anoNum
       }
-    }),
-  [socios, mesSelecionado])
+    })
+  }, [socios, mensalidades, pagamentos, mesSelecionado])
 
   const totalPagos     = sociosComStatus.filter(s => s.statusMes === 'Pago').length
-  const totalPendentes = sociosComStatus.filter(s => s.statusMes === 'Pendente').length
+  const totalPendentes = sociosComStatus.filter(s => s.statusMes === 'Pendente' || s.statusMes === 'Atrasado').length
   const totalArrecadado = sociosComStatus
     .filter(s => s.statusMes === 'Pago')
     .reduce((acc, s) => acc + parseMoeda(s.valorPagamento), 0)
 
-  const filtrados = sociosComStatus.filter(s => {
-    const matchBusca = (s.nome || '').toLowerCase().includes(busca.toLowerCase())
-    const matchStatus = filtroStatus === 'Todos' || s.statusMes === filtroStatus
-    return matchBusca && matchStatus
-  })
+  const STATUS_ORDEM = { 'Atrasado': 0, 'Pendente': 1, 'Pago': 2 }
 
-  function handleSalvarPagamento(pagamento) {
-    setSocios(prev => prev.map(s =>
-      s.id !== modalSocio.id ? s : {
-        ...s,
-        pagamentos: [pagamento, ...(s.pagamentos || [])],
-        mensalidade: 'Em dia',
-        ultimoPagamento: pagamento.data,
+  const filtrados = sociosComStatus
+    .filter(s => {
+      const matchBusca = (s.nome || '').toLowerCase().includes(busca.toLowerCase())
+      const matchStatus = filtroStatus === 'Todos' || s.statusMes === filtroStatus
+      return matchBusca && matchStatus
+    })
+    .sort((a, b) => {
+      const ordemA = STATUS_ORDEM[a.statusMes] ?? 1
+      const ordemB = STATUS_ORDEM[b.statusMes] ?? 1
+      if (ordemA !== ordemB) return ordemA - ordemB
+      return (a.nome || '').localeCompare(b.nome || '', 'pt-BR')
+    })
+
+  async function handleSalvarPagamento(payload) {
+    const { mesStr, valorStr, dataIso, formaPagamento } = payload
+    
+    const [mesNome, anoStr] = mesStr.split('/')
+    const mesNum = MESES_NOMES.indexOf(mesNome) + 1
+    const anoNum = parseInt(anoStr, 10)
+    const valorNum = parseMoeda(valorStr)
+
+    setLoading(true)
+    try {
+      // 1. Buscar se mensalidade existe
+      const m = mensalidades.find(
+        mens => mens.socio_id === modalSocio.id &&
+                mens.mes === mesNum &&
+                mens.ano === anoNum &&
+                !mens.dependente_id
+      )
+
+      let mId;
+      if (m) {
+        await updateMensalidade(m.id, {
+          socio_id: m.socio_id,
+          dependente_id: null,
+          mes: m.mes,
+          ano: m.ano,
+          valor: m.valor,
+          status: 'Pago',
+          data_vencimento: m.data_vencimento
+        })
+        mId = m.id
+      } else {
+        const dataVenc = `${anoNum}-${String(mesNum).padStart(2, '0')}-28`
+        const novaM = await createMensalidade({
+          socio_id: modalSocio.id,
+          dependente_id: null,
+          mes: mesNum,
+          ano: anoNum,
+          valor: valorNum,
+          status: 'Pago',
+          data_vencimento: dataVenc
+        })
+        mId = novaM.id
       }
-    ))
+
+      // 2. Criar pagamento
+      await createPagamento({
+        mensalidade_id: mId,
+        data_pagamento: dataIso,
+        forma_pagamento: formaPagamento,
+        valor_pago: valorNum,
+        multa_juros_aplicados: 0
+      })
+
+      toast.success('Pagamento registrado com sucesso no servidor!')
+      carregarDados()
+    } catch (err) {
+      console.error(err)
+      toast.error(`Erro ao salvar pagamento: ${err.message}`)
+      setLoading(false)
+    }
     setModalSocio(null)
   }
 
@@ -248,25 +332,34 @@ export default function Pagamentos() {
                     i < filtrados.length - 1 ? 'border-b border-gray-100' : ''
                   }`}
                 >
-                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm shrink-0">
-                    {iniciais(s.nome)}
-                  </div>
+                  <Link
+                    to={`/socios/${s.id}`}
+                    className="flex items-center gap-4 min-w-0 flex-1 group"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm shrink-0 group-hover:bg-[#1a3560] group-hover:text-white transition-colors">
+                      {iniciais(s.nome)}
+                    </div>
 
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm truncate">{s.nome}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{s.invernada}</p>
-                  </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm truncate group-hover:text-[#1a3560] transition-colors">{s.nome}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{s.invernada}</p>
+                    </div>
+                  </Link>
 
                   <div className="flex items-center gap-3 shrink-0">
                     {s.statusMes === 'Pago' ? (
                       <>
-                        <span className="text-xs text-gray-400 hidden sm:block">{s.dataPagamento}</span>
-                        <span className="text-xs text-gray-500 hidden sm:block">{s.valorPagamento}</span>
+                        <span className="text-xs text-gray-400 hidden sm:block">
+                          {s.dataPagamento ? s.dataPagamento.split('-').reverse().join('/') : '—'}
+                        </span>
+                        <span className="text-xs text-gray-500 hidden sm:block">
+                          R$ {Number(s.valorPagamento || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </span>
                         <Badge color="green">Pago</Badge>
                       </>
                     ) : (
                       <>
-                        <Badge color="yellow">Pendente</Badge>
+                        <Badge color={s.statusMes === 'Atrasado' ? 'red' : 'yellow'}>{s.statusMes}</Badge>
                         <button
                           onClick={() => setModalSocio(s)}
                           className="bg-[#1a3560] text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-900 transition-colors cursor-pointer border-none"
@@ -287,7 +380,11 @@ export default function Pagamentos() {
       {modalSocio && (
         <ModalPagamento
           nomeSocio={modalSocio.nome}
+          socioId={modalSocio.id}
+          dataEntrada={modalSocio.data_entrada}
           mesPadrao={mesSelecionado}
+          mensalidades={mensalidades}
+          pagamentos={pagamentos}
           onFechar={() => setModalSocio(null)}
           onSalvar={handleSalvarPagamento}
         />

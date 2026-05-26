@@ -1,4 +1,3 @@
 export const INVERNADAS = [
-  'Nenhuma', 'Pre Mirim', 'Mirim', 'Juvenil',
-  'Adulto', 'Veterano', 'Xiru', 'Chula',
+  'Nenhuma', 'Pré-Mirim', 'Mirim', 'Juvenil', 'Adulta', 'Veterana / Xiru'
 ]

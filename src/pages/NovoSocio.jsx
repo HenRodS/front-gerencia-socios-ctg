@@ -6,53 +6,8 @@ import ModalDependente from '../components/ModalDependente'
 import { INVERNADAS } from '../data/constants'
 import { useToast } from '../contexts/ToastContext'
 import { createSocio } from '../services/sociosService'
+import { validarCPF, formatarCPF, formatarTelefone } from '../utils/formattingUtils'
 
-function validarCPF(cpf) {
-  const limpo = cpf.replace(/\D/g, '')
-  if (limpo.length !== 11) return false
-  if (/^(\d)\1{10}$/.test(limpo)) return false
-
-  let soma = 0
-  let resto
-
-  for (let i = 1; i <= 9; i++) {
-    soma += parseInt(limpo.substring(i - 1, i)) * (11 - i)
-  }
-
-  resto = (soma * 10) % 11
-  if (resto === 10 || resto === 11) resto = 0
-  if (resto !== parseInt(limpo.substring(9, 10))) return false
-
-  soma = 0
-  for (let i = 1; i <= 10; i++) {
-    soma += parseInt(limpo.substring(i - 1, i)) * (12 - i)
-  }
-
-  resto = (soma * 10) % 11
-  if (resto === 10 || resto === 11) resto = 0
-  if (resto !== parseInt(limpo.substring(10, 11))) return false
-
-  return true
-}
-
-function formatarCPF(value) {
-  const digitos = value.replace(/\D/g, '')
-  const limitados = digitos.substring(0, 11)
-  
-  if (limitados.length <= 3) return limitados
-  if (limitados.length <= 6) return `${limitados.slice(0, 3)}.${limitados.slice(3)}`
-  if (limitados.length <= 9) return `${limitados.slice(0, 3)}.${limitados.slice(3, 6)}.${limitados.slice(6)}`
-  return `${limitados.slice(0, 3)}.${limitados.slice(3, 6)}.${limitados.slice(6, 9)}-${limitados.slice(9)}`
-}
-
-function formatarTelefone(value) {
-  const digitos = value.replace(/\D/g, '')
-  const limitados = digitos.substring(0, 11)
-  
-  if (limitados.length <= 2) return limitados
-  if (limitados.length <= 7) return `(${limitados.slice(0, 2)}) ${limitados.slice(2)}`
-  return `(${limitados.slice(0, 2)}) ${limitados.slice(2, 7)}-${limitados.slice(7)}`
-}
 
 export default function NovoSocio() {
   const navigate = useNavigate()
@@ -60,7 +15,7 @@ export default function NovoSocio() {
 
   const [form, setForm] = useState({
     nome: '', cpf: '', data_nascimento: '', telefone: '', email: '',
-    endereco: '', status: 'Ativo', mensalidade: 'Em dia',
+    endereco: '', status: 'Ativo', mensalidade: 'Pendente',
     invernada: 'Nenhuma', numeroDependentes: 0,
   })
 
@@ -189,13 +144,7 @@ export default function NovoSocio() {
                 </select>
               </div>
 
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-bold">Status de Pagamento *</label>
-                <select value={form.mensalidade} onChange={e => setField('mensalidade', e.target.value)} className={inputClass} disabled={cadastrando}>
-                  <option>Em dia</option>
-                  <option>Atrasado</option>
-                </select>
-              </div>
+
 
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-bold">Invernada de Dança *</label>

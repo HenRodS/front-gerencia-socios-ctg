@@ -1,65 +1,22 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import Badge from '../components/Badge'
 import ModalPagamento from '../components/ModalPagamento'
 import { INVERNADAS } from '../data/constants'
-import { getSocioById, updateSocio } from '../services/sociosService'
+import {
+  getSocioById,
+  updateSocio,
+  getMensalidades,
+  createMensalidade,
+  updateMensalidade,
+  getPagamentos,
+  createPagamento
+} from '../services/sociosService'
 import { useToast } from '../contexts/ToastContext'
+import { calcularStatusSocio } from '../utils/statusHelper'
+import { MESES_NOMES, iniciais, validarCPF, formatarCPF, formatarTelefone } from '../utils/formattingUtils'
 
-function iniciais(nome) {
-  const partes = (nome || '').trim().split(' ')
-  const primeira = partes[0]?.[0] ?? ''
-  const ultima = partes[partes.length - 1]?.[0] ?? ''
-  return (primeira + ultima).toUpperCase()
-}
-
-function validarCPF(cpf) {
-  const limpo = cpf.replace(/\D/g, '')
-  if (limpo.length !== 11) return false
-  if (/^(\d)\1{10}$/.test(limpo)) return false
-
-  let soma = 0
-  let resto
-
-  for (let i = 1; i <= 9; i++) {
-    soma += parseInt(limpo.substring(i - 1, i)) * (11 - i)
-  }
-
-  resto = (soma * 10) % 11
-  if (resto === 10 || resto === 11) resto = 0
-  if (resto !== parseInt(limpo.substring(9, 10))) return false
-
-  soma = 0
-  for (let i = 1; i <= 10; i++) {
-    soma += parseInt(limpo.substring(i - 1, i)) * (12 - i)
-  }
-
-  resto = (soma * 10) % 11
-  if (resto === 10 || resto === 11) resto = 0
-  if (resto !== parseInt(limpo.substring(10, 11))) return false
-
-  return true
-}
-
-function formatarCPF(value) {
-  const digitos = value.replace(/\D/g, '')
-  const limitados = digitos.substring(0, 11)
-  
-  if (limitados.length <= 3) return limitados
-  if (limitados.length <= 6) return `${limitados.slice(0, 3)}.${limitados.slice(3)}`
-  if (limitados.length <= 9) return `${limitados.slice(0, 3)}.${limitados.slice(3, 6)}.${limitados.slice(6)}`
-  return `${limitados.slice(0, 3)}.${limitados.slice(3, 6)}.${limitados.slice(6, 9)}-${limitados.slice(9)}`
-}
-
-function formatarTelefone(value) {
-  const digitos = value.replace(/\D/g, '')
-  const limitados = digitos.substring(0, 11)
-  
-  if (limitados.length <= 2) return limitados
-  if (limitados.length <= 7) return `(${limitados.slice(0, 2)}) ${limitados.slice(2)}`
-  return `(${limitados.slice(0, 2)}) ${limitados.slice(2, 7)}-${limitados.slice(7)}`
-}
 
 export default function SocioDetalhe() {
   const { id } = useParams()
@@ -72,19 +29,61 @@ export default function SocioDetalhe() {
   const [form, setForm] = useState(null)
   const [salvo, setSalvo] = useState(false)
   const [modalPagamento, setModalPagamento] = useState(false)
+  const [mensalidades, setMensalidades] = useState([])
+  const [pagamentos, setPagamentos] = useState([])
 
-  useEffect(() => {
-    getSocioById(id)
-      .then(data => {
-        setOriginal(data)
-        setForm({ ...data })
+  const carregarDados = useCallback(() => {
+    setLoading(true)
+    Promise.all([getSocioById(id), getMensalidades(), getPagamentos()])
+      .then(([socioData, mensalidadesData, pagamentosData]) => {
+        const socioMensalidades = mensalidadesData.filter(m => m.socio_id === Number(id))
+        
+        const historicoMapeado = socioMensalidades.map(m => {
+          const p = pagamentosData.find(pg => pg.mensalidade_id === m.id)
+          return {
+            id: m.id,
+            mesNum: m.mes,
+            anoNum: m.ano,
+            mes: `${MESES_NOMES[m.mes - 1]}/${m.ano}`,
+            valor: `R$ ${Number(m.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+            valorNum: Number(m.valor),
+            status: m.status,
+            data: p ? p.data_pagamento.split('-').reverse().join('/') : '—',
+            dataIso: p ? p.data_pagamento : null,
+            formaPagamento: p ? p.forma_pagamento : null
+          }
+        }).sort((a, b) => b.anoNum - a.anoNum || b.mesNum - a.mesNum)
+
+        setMensalidades(socioMensalidades)
+        setPagamentos(pagamentosData)
+
+        const statusAutomatico = calcularStatusSocio(socioData, mensalidadesData)
+
+        const formObject = {
+          ...socioData,
+          mensalidade: statusAutomatico,
+          pagamentos: historicoMapeado
+        }
+
+        setOriginal(formObject)
+        setForm(formObject)
         setLoading(false)
       })
       .catch(err => {
         console.error(err)
+        toast.error(`Erro ao carregar dados do sócio: ${err.message}`)
         setLoading(false)
       })
-  }, [id])
+  }, [id, toast])
+
+  useEffect(() => {
+    carregarDados()
+  }, [carregarDados])
+
+  const statusAutomatico = useMemo(() => {
+    if (!form) return 'Pendente'
+    return calcularStatusSocio(form, mensalidades)
+  }, [form?.status, form?.data_entrada, mensalidades])
 
   if (loading) {
     return (
@@ -132,9 +131,14 @@ export default function SocioDetalhe() {
 
     setSaving(true)
     setSalvo(false)
-    updateSocio(id, form)
+    const payload = {
+      ...form,
+      mensalidade: statusAutomatico
+    }
+    updateSocio(id, payload)
       .then(() => {
-        setOriginal({ ...form })
+        setOriginal(payload)
+        setForm(payload)
         setSalvo(true)
         setSaving(false)
         toast.success('Alterações salvas com sucesso!')
@@ -158,18 +162,80 @@ export default function SocioDetalhe() {
     setSalvo(false)
   }
 
-  function handleSalvarPagamento(pagamento) {
-    setForm(prev => ({
-      ...prev,
-      pagamentos: [pagamento, ...prev.pagamentos],
-      mensalidade: 'Em dia',
-      ultimoPagamento: pagamento.data,
-    }))
+  async function handleSalvarPagamento(payload) {
+    const { mesStr, valorStr, dataIso, formaPagamento } = payload
+    
+    const [mesNome, anoStr] = mesStr.split('/')
+    const mesNum = MESES_NOMES.indexOf(mesNome) + 1
+    const anoNum = parseInt(anoStr, 10)
+    
+    const cleanValor = (val) => {
+      if (typeof val === 'number') return val
+      const str = String(val ?? '80.00')
+      const n = parseFloat(str.replace(/[^\d,]/g, '').replace(',', '.'))
+      return isNaN(n) ? 80 : n
+    }
+    const valorNum = cleanValor(valorStr)
+
+    setLoading(true)
+    try {
+      // 1. Buscar se mensalidade existe
+      const m = mensalidades.find(
+        mens => mens.mes === mesNum &&
+                mens.ano === anoNum &&
+                !mens.dependente_id
+      )
+
+      let mId;
+      if (m) {
+        await updateMensalidade(m.id, {
+          socio_id: Number(id),
+          dependente_id: null,
+          mes: m.mes,
+          ano: m.ano,
+          valor: m.valor,
+          status: 'Pago',
+          data_vencimento: m.data_vencimento
+        })
+        mId = m.id
+      } else {
+        const dataVenc = `${anoNum}-${String(mesNum).padStart(2, '0')}-28`
+        const novaM = await createMensalidade({
+          socio_id: Number(id),
+          dependente_id: null,
+          mes: mesNum,
+          ano: anoNum,
+          valor: valorNum,
+          status: 'Pago',
+          data_vencimento: dataVenc
+        })
+        mId = novaM.id
+      }
+
+      // 2. Criar pagamento
+      await createPagamento({
+        mensalidade_id: mId,
+        data_pagamento: dataIso,
+        forma_pagamento: formaPagamento,
+        valor_pago: valorNum,
+        multa_juros_aplicados: 0
+      })
+
+      toast.success('Pagamento registrado com sucesso no servidor!')
+      carregarDados()
+    } catch (err) {
+      console.error(err)
+      toast.error(`Erro ao salvar pagamento: ${err.message}`)
+      setLoading(false)
+    }
   }
 
   const pagos     = form.pagamentos.filter(p => p.status === 'Pago').length
   const pendentes = form.pagamentos.filter(p => p.status !== 'Pago').length
-  const totalPago = `R$ ${pagos * 80},00`
+  const somaPago  = form.pagamentos
+    .filter(p => p.status === 'Pago')
+    .reduce((acc, p) => acc + p.valorNum, 0)
+  const totalPago = `R$ ${somaPago.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
 
   return (
     <Layout>
@@ -193,9 +259,9 @@ export default function SocioDetalhe() {
             <h1 className="text-[#1a3560] text-3xl font-bold mb-1 truncate">{form.nome}</h1>
             <p className="text-gray-500 text-sm mb-3">CPF: {form.cpf} · Sócio desde {form.data_entrada}</p>
             <div className="flex gap-2 flex-wrap">
-              <Badge color="green">{form.status}</Badge>
-              <Badge color={form.mensalidade === 'Em dia' ? 'green' : 'red'}>
-                {form.mensalidade === 'Em dia' ? 'Mensalidade em dia' : 'Mensalidade atrasada'}
+              <Badge color={form.status === 'Ativo' ? 'green' : 'red'}>{form.status}</Badge>
+              <Badge color={statusAutomatico === 'Em dia' ? 'green' : statusAutomatico === 'Atrasado' ? 'red' : statusAutomatico === 'Inativo' ? 'gray' : 'yellow'}>
+                {statusAutomatico === 'Em dia' ? 'Mensalidade em dia' : statusAutomatico === 'Atrasado' ? 'Mensalidade atrasada' : statusAutomatico === 'Inativo' ? 'Sócio inativo' : 'Mensalidade pendente'}
               </Badge>
               <Badge color="purple">{form.invernada}</Badge>
             </div>
@@ -255,13 +321,7 @@ export default function SocioDetalhe() {
                 </select>
               </div>
 
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-bold">Status de Pagamento</label>
-                <select value={form.mensalidade} onChange={e => setField('mensalidade', e.target.value)} className={inputClass} disabled={saving}>
-                  <option>Em dia</option>
-                  <option>Atrasado</option>
-                </select>
-              </div>
+
 
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-bold">Invernada de Dança</label>
@@ -370,6 +430,10 @@ export default function SocioDetalhe() {
       {modalPagamento && (
         <ModalPagamento
           nomeSocio={form.nome}
+          socioId={form.id}
+          dataEntrada={form.data_entrada}
+          mensalidades={mensalidades}
+          pagamentos={pagamentos}
           onFechar={() => setModalPagamento(false)}
           onSalvar={handleSalvarPagamento}
         />
