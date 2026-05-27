@@ -6,7 +6,7 @@ import ModalDependente from '../components/ModalDependente'
 import { INVERNADAS } from '../data/constants'
 import { useToast } from '../contexts/ToastContext'
 import { createSocio } from '../services/sociosService'
-import { validarCPF, formatarCPF, formatarTelefone } from '../utils/formattingUtils'
+import { validarCPF, formatarCPF, formatarTelefone, formatarCEP, validarCEP } from '../utils/formattingUtils'
 
 
 export default function NovoSocio() {
@@ -15,7 +15,8 @@ export default function NovoSocio() {
 
   const [form, setForm] = useState({
     nome: '', cpf: '', data_nascimento: '', telefone: '', email: '',
-    endereco: '', status: 'Ativo', mensalidade: 'Pendente',
+    logradouro: '', numero: '', complemento: '', bairro: '', cidade: '', estado: '', cep: '',
+    status: 'Ativo', mensalidade: 'Pendente',
     invernada: 'Nenhuma', numeroDependentes: 0,
   })
 
@@ -38,13 +39,18 @@ export default function NovoSocio() {
   }
 
   function cadastrar() {
-    if (!form.nome || !form.cpf) {
-      toast.error('Preencha os campos obrigatórios: Nome e CPF.')
+    if (!form.nome || !form.cpf || !form.data_nascimento || !form.telefone || !form.email || !form.logradouro || !form.numero || !form.bairro || !form.cidade || !form.estado || !form.cep) {
+      toast.error('Preencha todos os campos obrigatórios (*).')
       return
     }
 
     if (!validarCPF(form.cpf)) {
       toast.error('O CPF informado é inválido. Por favor, verifique os dígitos.')
+      return
+    }
+
+    if (!validarCEP(form.cep)) {
+      toast.error('O CEP informado é inválido. Por favor, insira um CEP com 8 dígitos.')
       return
     }
 
@@ -130,10 +136,46 @@ export default function NovoSocio() {
                   onChange={e => setField('email', e.target.value)} className={inputClass} disabled={cadastrando} />
               </div>
 
-              <div className="flex flex-col gap-2 md:col-span-2">
-                <label className="text-sm font-bold">Endereço Completo *</label>
-                <input type="text" placeholder="Rua, Número, Bairro - Cidade/UF" value={form.endereco}
-                  onChange={e => setField('endereco', e.target.value)} className={inputClass} disabled={cadastrando} />
+              {/* Seção Endereço Detalhado */}
+              <div className="border-t border-gray-100 pt-6 mt-2 md:col-span-2 grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="md:col-span-4">
+                  <h3 className="text-sm font-bold text-[#1a3560] mb-1">Endereço</h3>
+                </div>
+                <div className="flex flex-col gap-2 md:col-span-3">
+                  <label className="text-sm font-bold">Logradouro / Rua *</label>
+                  <input type="text" placeholder="Rua, Avenida, etc." value={form.logradouro}
+                    onChange={e => setField('logradouro', e.target.value)} className={inputClass} disabled={cadastrando} />
+                </div>
+                <div className="flex flex-col gap-2 col-span-1">
+                  <label className="text-sm font-bold">Número *</label>
+                  <input type="text" placeholder="123 ou S/N" value={form.numero}
+                    onChange={e => setField('numero', e.target.value)} className={inputClass} disabled={cadastrando} />
+                </div>
+                <div className="flex flex-col gap-2 md:col-span-2">
+                  <label className="text-sm font-bold">Complemento</label>
+                  <input type="text" placeholder="Apto, Bloco, etc." value={form.complemento}
+                    onChange={e => setField('complemento', e.target.value)} className={inputClass} disabled={cadastrando} />
+                </div>
+                <div className="flex flex-col gap-2 md:col-span-2">
+                  <label className="text-sm font-bold">Bairro *</label>
+                  <input type="text" placeholder="Bairro" value={form.bairro}
+                    onChange={e => setField('bairro', e.target.value)} className={inputClass} disabled={cadastrando} />
+                </div>
+                <div className="flex flex-col gap-2 md:col-span-2">
+                  <label className="text-sm font-bold">Cidade *</label>
+                  <input type="text" placeholder="Cidade" value={form.cidade}
+                    onChange={e => setField('cidade', e.target.value)} className={inputClass} disabled={cadastrando} />
+                </div>
+                <div className="flex flex-col gap-2 col-span-1">
+                  <label className="text-sm font-bold">Estado *</label>
+                  <input type="text" placeholder="UF" maxLength={2} value={form.estado}
+                    onChange={e => setField('estado', e.target.value.toUpperCase())} className={inputClass} disabled={cadastrando} />
+                </div>
+                <div className="flex flex-col gap-2 col-span-1">
+                  <label className="text-sm font-bold">CEP *</label>
+                  <input type="text" placeholder="99999-999" maxLength={9} value={form.cep}
+                    onChange={e => setField('cep', formatarCEP(e.target.value))} className={inputClass} disabled={cadastrando} />
+                </div>
               </div>
 
               <div className="flex flex-col gap-2">

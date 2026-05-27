@@ -39,9 +39,22 @@ function mapMensalidadeParaPagamento(m) {
 
 // Converte os dados recebidos do back-end para o formato em conformidade com as páginas do front-end
 function mapBackendToFrontendSocio(b, mensalidades = []) {
-  const enderecoStr = b.endereco && typeof b.endereco === 'string'
-    ? b.endereco
-    : 'Rua Não Informada, S/N - Centro - Charqueadas/RS';
+  let enderecoStr = '';
+  if (b.endereco) {
+    if (typeof b.endereco === 'string') {
+      enderecoStr = b.endereco;
+    } else if (typeof b.endereco === 'object') {
+      const { logradouro, numero, complemento, bairro, cidade, estado, cep } = b.endereco;
+      const compStr = complemento ? ` (${complemento})` : '';
+      enderecoStr = `${logradouro || ''}, ${numero || ''}${compStr} - ${bairro || ''}, ${cidade || ''}/${estado || ''}`;
+      if (cep) {
+        enderecoStr += ` - CEP: ${cep}`;
+      }
+    }
+  }
+  if (!enderecoStr) {
+    enderecoStr = 'Rua Não Informada, S/N - Centro - Charqueadas/RS';
+  }
 
   const pagamentos = mensalidades.map(mapMensalidadeParaPagamento);
 
@@ -58,8 +71,15 @@ function mapBackendToFrontendSocio(b, mensalidades = []) {
     telefone: b.telefone,
     data_nascimento: b.data_nascimento,
     endereco: enderecoStr,
+    logradouro: b.endereco?.logradouro || '',
+    numero: b.endereco?.numero || '',
+    complemento: b.endereco?.complemento || '',
+    bairro: b.endereco?.bairro || '',
+    cidade: b.endereco?.cidade || '',
+    estado: b.endereco?.estado || '',
+    cep: b.endereco?.cep || '',
     status: b.status || 'Ativo',
-    invernada: CATEGORIA_TO_INVERNADA[String(b.categoria_id)] || 'Nenhuma',
+    invernada: CATEGORIA_TO_INVERNADA[String(b.categoria)] || 'Nenhuma',
     dependentes: Array.isArray(b.dependentes) ? b.dependentes.length : 0,
     mensalidade: temPendente ? 'Atrasado' : 'Em dia',
     data_entrada: b.data_entrada,
@@ -70,17 +90,81 @@ function mapBackendToFrontendSocio(b, mensalidades = []) {
 
 // Converte os dados do front-end no JSON que o controlador PHP do back-end necessita
 function mapFrontendToBackendSocio(f) {
+  let logradouro = 'Rua Não Informada';
+  let numero = 'S/N';
+  let bairro = 'Centro';
+  let cidade = 'Charqueadas';
+  let estado = 'RS';
+  let cep = '96745-000';
+  let complemento = '';
+
+  if (f.logradouro || f.numero || f.bairro || f.cidade || f.estado || f.cep) {
+    logradouro = f.logradouro || 'Rua Não Informada';
+    numero = f.numero || 'S/N';
+    bairro = f.bairro || 'Centro';
+    cidade = f.cidade || 'Charqueadas';
+    estado = f.estado || 'RS';
+    cep = f.cep || '96745-000';
+    complemento = f.complemento || '';
+  } else if (f.endereco) {
+    const parts = f.endereco.split('-');
+    if (parts.length >= 2) {
+      const leftPart = parts[0].trim();
+      const rightPart = parts[1].trim();
+
+      const cityStateParts = rightPart.split('/');
+      if (cityStateParts.length >= 2) {
+        cidade = cityStateParts[0].trim();
+        estado = cityStateParts[1].replace(/CEP:?\s*\d{5}-?\d{3}/i, '').trim();
+      } else {
+        cidade = rightPart;
+      }
+
+      const leftSubParts = leftPart.split(',');
+      if (leftSubParts.length >= 3) {
+        logradouro = leftSubParts[0].trim();
+        numero = leftSubParts[1].trim();
+        bairro = leftSubParts[2].trim();
+      } else if (leftSubParts.length === 2) {
+        logradouro = leftSubParts[0].trim();
+        numero = leftSubParts[1].trim();
+      } else {
+        logradouro = leftPart;
+      }
+    } else {
+      const leftSubParts = f.endereco.split(',');
+      if (leftSubParts.length >= 2) {
+        logradouro = leftSubParts[0].trim();
+        numero = leftSubParts[1].trim();
+      } else {
+        logradouro = f.endereco;
+      }
+    }
+
+    const cepMatch = f.endereco.match(/(\d{5}-\d{3})|(\d{8})/);
+    if (cepMatch) {
+      cep = cepMatch[0];
+    }
+  }
+
   return {
     nome: f.nome,
     cpf: f.cpf,
     telefone: f.telefone || '',
+    email: f.email || '',
     foto: f.foto || '',
     identidade: f.identidade || 'Não informada',
-    endereco: f.endereco || '',
+    logradouro,
+    numero,
+    bairro,
+    cidade,
+    estado,
+    cep,
+    complemento: complemento || null,
     data_nascimento: f.data_nascimento || '1990-01-01',
     data_entrada: f.data_entrada || new Date().toISOString().split('T')[0],
     status: f.status || 'Ativo',
-    categoria_id: INVERNADA_TO_CATEGORIA[f.invernada] || '1',
+    categoria: INVERNADA_TO_CATEGORIA[f.invernada] || '1',
     dancarino: f.dancarino !== undefined ? f.dancarino : true,
     paga_instrutor: f.paga_instrutor !== undefined ? f.paga_instrutor : false,
   };
