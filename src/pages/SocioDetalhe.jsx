@@ -15,7 +15,7 @@ import {
 } from '../services/sociosService'
 import { useToast } from '../contexts/ToastContext'
 import { calcularStatusSocio } from '../utils/statusHelper'
-import { MESES_NOMES, iniciais, validarCPF, formatarCPF, formatarTelefone } from '../utils/formattingUtils'
+import { MESES_NOMES, iniciais, validarCPF, formatarCPF, formatarTelefone, formatarCEP, validarCEP } from '../utils/formattingUtils'
 
 
 export default function SocioDetalhe() {
@@ -126,6 +126,11 @@ export default function SocioDetalhe() {
 
     if (!validarCPF(form.cpf)) {
       toast.error('O CPF informado é inválido. Por favor, verifique os dígitos.')
+      return
+    }
+
+    if (!validarCEP(form.cep)) {
+      toast.error('O CEP informado é inválido. Por favor, insira um CEP com 8 dígitos.')
       return
     }
 
@@ -346,7 +351,7 @@ export default function SocioDetalhe() {
                 <div className="flex flex-col gap-2 col-span-1">
                   <label className="text-sm font-bold">CEP *</label>
                   <input type="text" placeholder="99999-999" maxLength={9} value={form.cep}
-                    onChange={e => setField('cep', e.target.value)} className={inputClass} disabled={saving} />
+                    onChange={e => setField('cep', formatarCEP(e.target.value))} className={inputClass} disabled={saving} />
                 </div>
               </div>
 

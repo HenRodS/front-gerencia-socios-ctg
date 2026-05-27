@@ -6,7 +6,7 @@ import ModalDependente from '../components/ModalDependente'
 import { INVERNADAS } from '../data/constants'
 import { useToast } from '../contexts/ToastContext'
 import { createSocio } from '../services/sociosService'
-import { validarCPF, formatarCPF, formatarTelefone } from '../utils/formattingUtils'
+import { validarCPF, formatarCPF, formatarTelefone, formatarCEP, validarCEP } from '../utils/formattingUtils'
 
 
 export default function NovoSocio() {
@@ -46,6 +46,11 @@ export default function NovoSocio() {
 
     if (!validarCPF(form.cpf)) {
       toast.error('O CPF informado é inválido. Por favor, verifique os dígitos.')
+      return
+    }
+
+    if (!validarCEP(form.cep)) {
+      toast.error('O CEP informado é inválido. Por favor, insira um CEP com 8 dígitos.')
       return
     }
 
@@ -169,7 +174,7 @@ export default function NovoSocio() {
                 <div className="flex flex-col gap-2 col-span-1">
                   <label className="text-sm font-bold">CEP *</label>
                   <input type="text" placeholder="99999-999" maxLength={9} value={form.cep}
-                    onChange={e => setField('cep', e.target.value)} className={inputClass} disabled={cadastrando} />
+                    onChange={e => setField('cep', formatarCEP(e.target.value))} className={inputClass} disabled={cadastrando} />
                 </div>
               </div>
 
