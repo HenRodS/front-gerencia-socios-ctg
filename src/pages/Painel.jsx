@@ -5,8 +5,9 @@ import Layout from '../components/Layout'
 import Badge from '../components/Badge'
 import StatCard from '../components/StatCard'
 import EmptyState from '../components/EmptyState'
-import { getSocios, getMensalidades } from '../services/sociosService'
 import { MESES_NOMES, gerarMeses, parseDate, formatDateBR } from '../utils/formattingUtils'
+import { socioService } from '../services/socioService'
+import { mensalidadeService } from '../services/mensalidadeService'
 
 const MESES = gerarMeses()
 
@@ -18,7 +19,10 @@ export default function Painel() {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    Promise.all([getSocios(), getMensalidades()])
+    Promise.all([
+      socioService.getAll(),
+      mensalidadeService.getAll()
+    ])
       .then(([sociosData, mensalidadesData]) => {
         setSocios(sociosData)
         setMensalidades(mensalidadesData)

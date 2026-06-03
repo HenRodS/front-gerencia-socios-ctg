@@ -5,9 +5,10 @@ import Layout from '../components/Layout'
 import Badge from '../components/Badge'
 import EmptyState from '../components/EmptyState'
 import { INVERNADAS } from '../data/constants'
-import { getSocios, getMensalidades } from '../services/sociosService'
 import { useToast } from '../contexts/ToastContext'
 import { calcularStatusSocio } from '../utils/statusHelper'
+import { socioService } from '../services/socioService'
+import { mensalidadeService } from '../services/mensalidadeService'
 
 const INVERNADAS_FILTRO = ['Todas as Invernadas', ...INVERNADAS]
 
@@ -31,7 +32,10 @@ export default function Socios() {
   const [invernada, setInvernada] = useState('Todas as Invernadas')
 
   useEffect(() => {
-    Promise.all([getSocios(), getMensalidades()])
+    Promise.all([      
+      socioService.getAll(),
+      mensalidadeService.getAll()
+    ])
       .then(([sociosData, mensalidadesData]) => {
         const mapped = sociosData.map(s => {
           return {

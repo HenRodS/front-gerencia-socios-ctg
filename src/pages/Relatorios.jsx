@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import Layout from '../components/Layout'
 import Badge from '../components/Badge'
-import { getSocios, getMensalidades, getPagamentos } from '../services/sociosService'
+import { socioService } from '../services/socioService'
+import { mensalidadeService } from '../services/mensalidadeService'
+import { pagamentoService } from '../services/pagamentoService'
 import { useToast } from '../contexts/ToastContext'
 import { INVERNADAS } from '../data/constants'
 import { exportarExcel, exportarWord, exportarPDF } from '../utils/reportExporter'
@@ -39,9 +41,9 @@ export default function Relatorios() {
 
     try {
       const [sociosData, mensalidadesData, pagamentosData] = await Promise.all([
-        getSocios(),
-        getMensalidades(),
-        getPagamentos()
+        socioService.getAll(),
+        mensalidadeService.getAll(),
+        pagamentoService.getAll(),
       ])
 
       // Parse do mês de referência selecionado
