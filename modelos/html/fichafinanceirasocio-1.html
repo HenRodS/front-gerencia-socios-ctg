@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Ficha de Sócio</title>
+
+    <link rel="stylesheet" href="fichafinanceirasocio-1.css">
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="cabecalho">
+        FICHA DE SÓCIO
+    </div>
+
+    <!-- DADOS DO SÓCIO -->
+    <table>
+
+        <tr>
+
+            <td class="label">
+                Nome do Sócio
+            </td>
+
+            <td class="campo">
+
+                <input type="text"
+                    id="nomeSocio"
+                    placeholder="Digite o nome do sócio">
+
+            </td>
+
+            <td class="label">
+                Fone
+            </td>
+
+            <td class="campo">
+
+                <input type="text"
+                    id="foneSocio"
+                    placeholder="(00) 00000-0000">
+
+            </td>
+
+        </tr>
+
+        <!-- DANÇARINO -->
+        <tr>
+
+            <td class="label">
+                É Dançarino?
+            </td>
+
+            <td colspan="3">
+
+                <div class="radio-group">
+
+                    <label>
+
+                        <input type="radio"
+                            name="socioDancarino"
+                            value="sim"
+                            onchange="toggleSocioCategorias(true)">
+
+                        Sim
+
+                    </label>
+
+                    <label>
+
+                        <input type="radio"
+                            name="socioDancarino"
+                            value="nao"
+                            checked
+                            onchange="toggleSocioCategorias(false)">
+
+                        Não é Dançarino
+
+                    </label>
+
+                </div>
+
+            </td>
+
+        </tr>
+
+    </table>
+
+    <!-- CATEGORIAS SÓCIO -->
+    <div id="categoriaSocioBox" style="display:none;">
+
+        <table>
+
+            <tr class="titulo">
+
+                <td colspan="8">
+                    CATEGORIA / INVERNADA DO SÓCIO
+                </td>
+
+            </tr>
+
+            <tr class="titulo">
+
+                <td>Dente</td>
+                <td>Pré Mirim</td>
+                <td>Mirim</td>
+                <td>Juvenil</td>
+                <td>Adulta</td>
+                <td>Veterana</td>
+                <td>Xirú</td>
+                <td>Ação</td>
+
+            </tr>
+
+            <tr>
+
+                <td>
+                    <input type="radio"
+                        name="categoriaSocio"
+                        value="Dente">
+                </td>
+
+                <td>
+                    <input type="radio"
+                        name="categoriaSocio"
+                        value="Pré Mirim">
+                </td>
+
+                <td>
+                    <input type="radio"
+                        name="categoriaSocio"
+                        value="Mirim">
+                </td>
+
+                <td>
+                    <input type="radio"
+                        name="categoriaSocio"
+                        value="Juvenil">
+                </td>
+
+                <td>
+                    <input type="radio"
+                        name="categoriaSocio"
+                        value="Adulta">
+                </td>
+
+                <td>
+                    <input type="radio"
+                        name="categoriaSocio"
+                        value="Veterana">
+                </td>
+
+                <td>
+                    <input type="radio"
+                        name="categoriaSocio"
+                        value="Xirú">
+                </td>
+
+                <td>
+
+                    <button class="salvar-btn"
+                        onclick="salvarCategoriaSocio()">
+
+                        Salvar
+
+                    </button>
+
+                </td>
+
+            </tr>
+
+        </table>
+
+    </div>
+
+    <!-- INFORMAÇÃO DA INVERNADA -->
+    <table>
+
+        <tr>
+
+            <td class="label">
+                Invernada Atual
+            </td>
+
+            <td id="infoCategoriaSocio">
+                Não é dançarino
+            </td>
+
+            <td class="label">
+                Data Alteração
+            </td>
+
+            <td id="dataCategoriaSocio">
+                -
+            </td>
+
+        </tr>
+
+    </table>
+
+    <!-- DEPENDENTES -->
+    <table>
+
+        <tr class="titulo">
+
+            <td width="25%">
+                Dependente
+            </td>
+
+            <td width="15%">
+                É Dançarino?
+            </td>
+
+            <td width="30%">
+                Categoria / Invernada
+            </td>
+
+            <td width="20%">
+                Data Alteração
+            </td>
+
+            <td width="10%">
+                Ação
+            </td>
+
+        </tr>
+
+        <!-- DEPENDENTE 1 -->
+        <tr>
+
+            <td>
+
+                <input type="text"
+                    value="Maria da Silva">
+
+            </td>
+
+            <td>
+
+                <select onchange="toggleDependente(this,1)">
+
+                    <option value="nao">
+                        Não
+                    </option>
+
+                    <option value="sim">
+                        Sim
+                    </option>
+
+                </select>
+
+            </td>
+
+            <td>
+
+                <select id="categoriaDependente1"
+                    disabled>
+
+                    <option value="">
+                        Selecione
+                    </option>
+
+                    <option>Dente</option>
+                    <option>Pré Mirim</option>
+                    <option>Mirim</option>
+                    <option>Juvenil</option>
+                    <option>Adulta</option>
+                    <option>Veterana</option>
+                    <option>Xirú</option>
+
+                </select>
+
+            </td>
+
+            <td id="dataDependente1">
+                -
+            </td>
+
+            <td>
+
+                <button class="salvar-btn"
+                    onclick="salvarDependente(1)">
+
+                    Salvar
+
+                </button>
+
+            </td>
+
+        </tr>
+
+        <!-- DEPENDENTE 2 -->
+        <tr>
+
+            <td>
+
+                <input type="text"
+                    value="Pedro da Silva">
+
+            </td>
+
+            <td>
+
+                <select onchange="toggleDependente(this,2)">
+
+                    <option value="nao">
+                        Não
+                    </option>
+
+                    <option value="sim">
+                        Sim
+                    </option>
+
+                </select>
+
+            </td>
+
+            <td>
+
+                <select id="categoriaDependente2"
+                    disabled>
+
+                    <option value="">
+                        Selecione
+                    </option>
+
+                    <option>Dente</option>
+                    <option>Pré Mirim</option>
+                    <option>Mirim</option>
+                    <option>Juvenil</option>
+                    <option>Adulta</option>
+                    <option>Veterana</option>
+                    <option>Xirú</option>
+
+                </select>
+
+            </td>
+
+            <td id="dataDependente2">
+                -
+            </td>
+
+            <td>
+
+                <button class="salvar-btn"
+                    onclick="salvarDependente(2)">
+
+                    Salvar
+
+                </button>
+
+            </td>
+
+        </tr>
+
+    </table>
+
+    <br>
+
+    <div class="flex">
+
+        <!-- MENSALIDADE SÓCIO -->
+        <div class="metade">
+
+            <table>
+
+                <tr class="titulo">
+
+                    <td colspan="6">
+                        MENSALIDADE DE SÓCIO
+                    </td>
+
+                </tr>
+
+                <tr class="titulo">
+
+                    <td>Mês</td>
+                    <td>2026</td>
+                    <td>2027</td>
+                    <td>2028</td>
+                    <td>2029</td>
+                    <td>2030</td>
+
+                </tr>
+
+                <tbody id="mensalidadeSocio"></tbody>
+
+            </table>
+
+        </div>
+
+        <!-- MENSALIDADE INSTRUTOR -->
+        <div class="metade">
+
+            <table>
+
+                <tr class="titulo">
+
+                    <td colspan="6">
+                        MENSALIDADE DO INSTRUTOR
+                    </td>
+
+                </tr>
+
+                <tr class="titulo">
+
+                    <td>Mês</td>
+                    <td>2026</td>
+                    <td>2027</td>
+                    <td>2028</td>
+                    <td>2029</td>
+                    <td>2030</td>
+
+                </tr>
+
+                <tbody id="mensalidadeInstrutor"></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- OBSERVAÇÕES -->
+    <table>
+
+        <tr>
+
+            <td class="label">
+                Observações
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td class="observacoes">
+
+                <textarea></textarea>
+
+            </td>
+
+        </tr>
+
+    </table>
+
+</div>
+
+<script>
+
+const meses = [
+    "Janeiro","Fevereiro","Março","Abril",
+    "Maio","Junho","Julho","Agosto",
+    "Setembro","Outubro","Novembro","Dezembro"
+];
+
+const anos = [2026,2027,2028,2029,2030];
+
+function criarTabela(idTabela){
+
+    const tbody =
+        document.getElementById(idTabela);
+
+    meses.forEach((mes) => {
+
+        let linha = `
+            <tr>
+                <td>
+                    <strong>${mes}</strong>
+                </td>
+        `;
+
+        anos.forEach((ano) => {
+
+            linha += `
+                <td>
+
+                    <button
+                        class="pagamento-btn"
+                        onclick="registrarPagamento('${mes}','${ano}',this)">
+
+                        Inserir
+
+                    </button>
+
+                    <div class="pagamento-info"></div>
+
+                </td>
+            `;
+        });
+
+        linha += `</tr>`;
+
+        tbody.innerHTML += linha;
+    });
+}
+
+function registrarPagamento(mes, ano, botao){
+
+    let valor =
+        prompt(`Informe o valor pago (${mes}/${ano})`);
+
+    if(valor === null || valor === ""){
+        return;
+    }
+
+    let data =
+        prompt("Informe a data do pagamento");
+
+    if(data === null || data === ""){
+        return;
+    }
+
+    const info =
+        botao.parentElement.querySelector(".pagamento-info");
+
+    info.innerHTML = `
+        <strong>Valor:</strong> R$ ${valor}<br>
+        <strong>Data:</strong> ${data}
+    `;
+
+    botao.innerText = "Editar";
+}
+
+function toggleSocioCategorias(mostrar){
+
+    const box =
+        document.getElementById("categoriaSocioBox");
+
+    if(mostrar){
+
+        box.style.display = "block";
+
+    }else{
+
+        box.style.display = "none";
+
+        document.getElementById(
+            "infoCategoriaSocio"
+        ).innerText = "Não é dançarino";
+
+        document.getElementById(
+            "dataCategoriaSocio"
+        ).innerText = "-";
+    }
+}
+
+function salvarCategoriaSocio(){
+
+    const categoria =
+        document.querySelector(
+            'input[name="categoriaSocio"]:checked'
+        );
+
+    if(!categoria){
+
+        alert("Selecione uma categoria");
+        return;
+    }
+
+    const data =
+        new Date().toLocaleDateString('pt-BR');
+
+    document.getElementById(
+        "infoCategoriaSocio"
+    ).innerText = categoria.value;
+
+    document.getElementById(
+        "dataCategoriaSocio"
+    ).innerText = data;
+}
+
+function toggleDependente(select, id){
+
+    const categoria =
+        document.getElementById(
+            `categoriaDependente${id}`
+        );
+
+    if(select.value === "sim"){
+
+        categoria.disabled = false;
+
+    }else{
+
+        categoria.disabled = true;
+        categoria.value = "";
+
+        document.getElementById(
+            `dataDependente${id}`
+        ).innerText = "-";
+    }
+}
+
+function salvarDependente(id){
+
+    const categoria =
+        document.getElementById(
+            `categoriaDependente${id}`
+        );
+
+    if(categoria.disabled){
+
+        alert("Dependente não é dançarino");
+        return;
+    }
+
+    if(categoria.value === ""){
+
+        alert("Selecione uma categoria");
+        return;
+    }
+
+    const data =
+        new Date().toLocaleDateString('pt-BR');
+
+    document.getElementById(
+        `dataDependente${id}`
+    ).innerText = data;
+}
+
+criarTabela("mensalidadeSocio");
+criarTabela("mensalidadeInstrutor");
+
+</script>
+
+</body>
+</html>

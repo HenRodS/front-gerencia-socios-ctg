@@ -47,6 +47,7 @@ export default function ModalPagamento({
   const [data, setData] = useState(hojeISO())
   const [formaPagamento, setFormaPagamento] = useState('Transferencia')
   const [confirmado, setConfirmado] = useState(false)
+  const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState('')
   const [isAlreadyPaid, setIsAlreadyPaid] = useState(false)
   const [statusExibido, setStatusExibido] = useState('Pendente')
@@ -378,7 +379,7 @@ export default function ModalPagamento({
                   : 'bg-[#1a3560] text-white hover:bg-blue-800 shadow-[0_4px_12px_rgba(26,53,96,0.35)]'
               }`}
             >
-              Confirmar Pagamento
+              {salvando ? 'Salvando...' : 'Confirmar Pagamento'}
             </button>
           </div>
         </div>

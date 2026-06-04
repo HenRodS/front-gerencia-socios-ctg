@@ -116,3 +116,22 @@ export function parseMoeda(val) {
   const n = parseFloat(str.replace(/[^\d,]/g, '').replace(',', '.'))
   return isNaN(n) ? 80 : n
 }
+
+/**
+ * Aplica máscara de CEP enquanto o usuário digita.
+ * Limita a 8 dígitos e formata como #####-###
+ */
+export function formatarCEP(value) {
+  const digitos = value.replace(/\D/g, '')
+  const limitados = digitos.substring(0, 8)
+  if (limitados.length <= 5) return limitados
+  return `${limitados.slice(0, 5)}-${limitados.slice(5)}`
+}
+
+/**
+ * Valida se o CEP possui exatamente 8 dígitos numéricos.
+ */
+export function validarCEP(cep) {
+  const limpo = cep.replace(/\D/g, '')
+  return limpo.length === 8
+}
