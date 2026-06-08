@@ -4,15 +4,9 @@ import Layout from '../components/Layout'
 import Badge from '../components/Badge'
 import ModalPagamento from '../components/ModalPagamento'
 import { INVERNADAS } from '../data/constants'
-import {
-  getSocioById,
-  updateSocio,
-  getMensalidades,
-  createMensalidade,
-  updateMensalidade,
-  getPagamentos,
-  createPagamento
-} from '../services/sociosService'
+import { socioService } from '../services/socioService'
+import { mensalidadeService } from '../services/mensalidadeService'
+import { pagamentoService } from '../services/pagamentoService'
 import { useToast } from '../contexts/ToastContext'
 import { calcularStatusSocio } from '../utils/statusHelper'
 import { MESES_NOMES, iniciais, validarCPF, formatarCPF, formatarTelefone, formatarCEP, validarCEP } from '../utils/formattingUtils'
@@ -34,7 +28,11 @@ export default function SocioDetalhe() {
 
   const carregarDados = useCallback(() => {
     setLoading(true)
-    Promise.all([getSocioById(id), getMensalidades(), getPagamentos()])
+    Promise.all([
+      socioService.getById(id),
+      mensalidadeService.getAll(),
+      pagamentoService.getAll(),
+    ])
       .then(([socioData, mensalidadesData, pagamentosData]) => {
         const socioMensalidades = mensalidadesData.filter(m => m.socio_id === Number(id))
         
@@ -140,7 +138,7 @@ export default function SocioDetalhe() {
       ...form,
       mensalidade: statusAutomatico
     }
-    updateSocio(id, payload)
+    socioService.update(id, payload)
       .then(() => {
         setOriginal(payload)
         setForm(payload)
@@ -193,7 +191,7 @@ export default function SocioDetalhe() {
 
       let mId;
       if (m) {
-        await updateMensalidade(m.id, {
+        await mensalidadeService.update(m.id, {
           socio_id: Number(id),
           dependente_id: null,
           mes: m.mes,
@@ -205,7 +203,7 @@ export default function SocioDetalhe() {
         mId = m.id
       } else {
         const dataVenc = `${anoNum}-${String(mesNum).padStart(2, '0')}-28`
-        const novaM = await createMensalidade({
+        const novaM = await mensalidadeService.create({
           socio_id: Number(id),
           dependente_id: null,
           mes: mesNum,
@@ -218,7 +216,7 @@ export default function SocioDetalhe() {
       }
 
       // 2. Criar pagamento
-      await createPagamento({
+      await pagamentoService.create({
         mensalidade_id: mId,
         data_pagamento: dataIso,
         forma_pagamento: formaPagamento,

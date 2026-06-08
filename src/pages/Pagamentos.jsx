@@ -5,14 +5,9 @@ import Layout from '../components/Layout'
 import Badge from '../components/Badge'
 import EmptyState from '../components/EmptyState'
 import ModalPagamento from '../components/ModalPagamento'
-import {
-  getSocios,
-  getMensalidades,
-  createMensalidade,
-  updateMensalidade,
-  getPagamentos,
-  createPagamento
-} from '../services/sociosService'
+import { socioService } from '../services/socioService'
+import { mensalidadeService } from '../services/mensalidadeService'
+import { pagamentoService } from '../services/pagamentoService'
 import { useToast } from '../contexts/ToastContext'
 import { MESES_NOMES, gerarMeses, iniciais, parseMoeda } from '../utils/formattingUtils'
 
@@ -32,7 +27,11 @@ export default function Pagamentos() {
 
   const carregarDados = useCallback(() => {
     setLoading(true)
-    Promise.all([getSocios(), getMensalidades(), getPagamentos()])
+    Promise.all([
+      socioService.getAll(),
+      mensalidadeService.getAll(),
+      pagamentoService.getAll(),
+    ])
       .then(([sociosData, mensalidadesData, pagamentosData]) => {
         setSocios(sociosData)
         setMensalidades(mensalidadesData)
@@ -51,7 +50,6 @@ export default function Pagamentos() {
   }, [carregarDados])
 
   const mesSelecionado = MESES[mesIdx]
-
   const sociosComStatus = useMemo(() => {
     const [mesNome, anoStr] = (mesSelecionado || '').split('/')
     const mesNum = MESES_NOMES.indexOf(mesNome) + 1
@@ -135,7 +133,7 @@ export default function Pagamentos() {
 
       let mId;
       if (m) {
-        await updateMensalidade(m.id, {
+        await mensalidadeService.update(m.id, {
           socio_id: m.socio_id,
           dependente_id: null,
           mes: m.mes,
@@ -147,7 +145,7 @@ export default function Pagamentos() {
         mId = m.id
       } else {
         const dataVenc = `${anoNum}-${String(mesNum).padStart(2, '0')}-28`
-        const novaM = await createMensalidade({
+        const novaM = await mensalidadeService.create({
           socio_id: modalSocio.id,
           dependente_id: null,
           mes: mesNum,
@@ -160,7 +158,7 @@ export default function Pagamentos() {
       }
 
       // 2. Criar pagamento
-      await createPagamento({
+      await pagamentoService.create({
         mensalidade_id: mId,
         data_pagamento: dataIso,
         forma_pagamento: formaPagamento,

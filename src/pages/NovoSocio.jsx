@@ -5,8 +5,8 @@ import Layout from '../components/Layout'
 import ModalDependente from '../components/ModalDependente'
 import { INVERNADAS } from '../data/constants'
 import { useToast } from '../contexts/ToastContext'
-import { createSocio } from '../services/sociosService'
 import { validarCPF, formatarCPF, formatarTelefone, formatarCEP, validarCEP } from '../utils/formattingUtils'
+import { socioService } from '../services/socioService'
 
 
 export default function NovoSocio() {
@@ -55,7 +55,7 @@ export default function NovoSocio() {
     }
 
     setCadastrando(true)
-    createSocio(form)
+    socioService.create(form)
       .then(() => {
         toast.success('Sócio cadastrado com sucesso!')
         navigate('/socios')
