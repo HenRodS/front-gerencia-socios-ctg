@@ -18,6 +18,7 @@ export default function NovoSocio() {
     logradouro: '', numero: '', complemento: '', bairro: '', cidade: '', estado: '', cep: '',
     status: 'Ativo', mensalidade: 'Pendente',
     invernada: 'Nenhuma', numeroDependentes: 0,
+    dancarino: false,
   })
 
   const [dependentes, setDependentes] = useState([])
@@ -190,8 +191,26 @@ export default function NovoSocio() {
 
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-bold">Invernada de Dança *</label>
-                <select value={form.invernada} onChange={e => setField('invernada', e.target.value)} className={inputClass} disabled={cadastrando}>
+                <select
+                  value={form.invernada}
+                  onChange={e => setField('invernada', e.target.value)}
+                  className={`${inputClass} ${!form.dancarino ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ''}`}
+                  disabled={cadastrando || !form.dancarino}
+                >
                   {INVERNADAS.map(inv => <option key={inv}>{inv}</option>)}
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-bold">É dançarino?</label>
+                <select
+                  value={String(form.dancarino)}
+                  onChange={e => setField('dancarino', e.target.value === 'true')}
+                  className={inputClass}
+                  disabled={cadastrando}
+                >
+                  <option value="true">Sim</option>
+                  <option value="false">Não</option>
                 </select>
               </div>
 

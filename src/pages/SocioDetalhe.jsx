@@ -365,8 +365,26 @@ export default function SocioDetalhe() {
 
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-bold">Invernada de Dança</label>
-                <select value={form.invernada} onChange={e => setField('invernada', e.target.value)} className={inputClass} disabled={saving}>
+                <select
+                  value={form.invernada}
+                  onChange={e => setField('invernada', e.target.value)}
+                  className={`${inputClass} ${!form.dancarino ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ''}`}
+                  disabled={saving || !form.dancarino}
+                >
                   {INVERNADAS.map(inv => <option key={inv}>{inv}</option>)}
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-bold">É dançarino?</label>
+                <select
+                  value={String(form.dancarino)}
+                  onChange={e => setField('dancarino', e.target.value === 'true')}
+                  className={inputClass}
+                  disabled={saving}
+                >
+                  <option value="true">Sim</option>
+                  <option value="false">Não</option>
                 </select>
               </div>
 
